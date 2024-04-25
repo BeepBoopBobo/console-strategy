@@ -8,11 +8,19 @@ namespace console_strategy
 {
     internal class ConsoleHandler
     {
-        private Dictionary<string, int> resources = new Dictionary<string, int>() { {"Wood", 300 }, {"Stone",500 }, { "Gold", 35} };
-        private string description = "The peasants cheer as [Building Name] is erected in the town square, a symbol of prosperity and community.";
-        private string[] options = { "Build", "Upgrade", "Repair", "Overview" };
+
         private int activeOptionIndex = 0;
-        public ConsoleHandler() { }
+        private string description;
+        private string[] options;
+        private Resource[] resources;
+
+        public ConsoleHandler(Resource[] resources, string description, string[] options, int activeOptionIndex=0)
+        {
+            this.resources = resources;
+            this.description = description;
+            this.options = options;
+            this.activeOptionIndex = activeOptionIndex;
+        }
 
         public string ActiveOption() { return options[activeOptionIndex]; }
 
@@ -37,16 +45,15 @@ namespace console_strategy
         public void PrintResources()
         {
             Console.WriteLine("Your current resources:");
-            for (var i=0; i< resources.Count; i++) {
-                KeyValuePair<string, int> resource = resources.ElementAt(i);
+            for (var i=0; i< resources.Length; i++) {
 
-                if(i == resources.Count-1)
+                if(i == resources.Length-1)
                 {
-                    Console.Write("{0}: {1}\n", resource.Key, resource.Value);
+                    Console.Write("{0}: {1}/{2}\n", resources[i].Name, resources[i].Amount, resources[i].Capacity);
                 }
                 else
                 {
-                    Console.Write("{0}: {1}, ", resource.Key, resource.Value);
+                    Console.Write("{0}: {1}/{2}, ", resources[i].Name, resources[i].Amount, resources[i].Capacity);
                 }
             } 
 
