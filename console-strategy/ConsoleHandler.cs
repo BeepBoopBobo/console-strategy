@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,82 +9,142 @@ namespace console_strategy
 {
     internal class ConsoleHandler
     {
-
+        private static ConsoleHandler instance;
         private int activeOptionIndex = 0;
+
         private string description;
-        private string[] options;
+        private string optionDescription;
+        private Dictionary<string, Command> options;
         private Resource[] resources;
 
-        public ConsoleHandler(Resource[] resources, string description, string[] options, int activeOptionIndex=0)
+        public ConsoleHandler()
         {
-            this.resources = resources;
-            this.description = description;
-            this.options = options;
-            this.activeOptionIndex = activeOptionIndex;
         }
 
-        public string ActiveOption() { return options[activeOptionIndex]; }
+        public static ConsoleHandler GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new ConsoleHandler();
+            }
+            return instance;
+        }
+
+        public int ActiveOptionIndex
+        {
+            set { activeOptionIndex = value; }
+            get { return activeOptionIndex; }
+        }
+        public string Description
+        {
+            set { this.description = value; }
+            get { return this.description; }
+        }
+        public string OptionDescription
+        {
+            set { this.optionDescription = value; }
+            get { return this.optionDescription; }
+        }
+        public Dictionary<string, Command> Options
+        {
+            set { this.options = value; }
+            get { return this.options; }
+        }
+        public Resource[] Resources
+        {
+            set { this.resources = value; }
+            get { return this.resources; }
+        }
+
+
+        public string ActiveOption() { return this.Options.ElementAt(activeOptionIndex).Key; }
+
+        public void UpdateResources(Resource[] resources)
+        {
+            this.Resources = resources;
+
+        }
+        public void UpdateDescription(string description)
+        {
+            this.Description = description;
+
+        }
+        public void UpdateOptions(Dictionary<string, Command> options)
+        {
+            this.Options = options;
+
+        }
+        public void UpdateConsole(Resource[] resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
+        {
+            this.Resources = resources;
+            this.Description = description;
+            this.optionDescription = optDescription;
+            this.Options = options;
+            this.ActiveOptionIndex = activeOptionIndex;
+        }
 
         public void SelectNextOption()
         {
-            if (activeOptionIndex < options.Length-1)
+            if (this.ActiveOptionIndex < this.Options.Count - 1)
             {
-                this.activeOptionIndex++;
+                this.ActiveOptionIndex++;
             }
         }
         public void SelectPrevOption()
         {
-            if (activeOptionIndex > 0)
+            if (this.ActiveOptionIndex > 0)
             {
-                this.activeOptionIndex--;
+                this.ActiveOptionIndex--;
             }
         }
         public void ConfirmSelection()
         {
-            Console.WriteLine("Selected: {0}", this.ActiveOption());
+            this.Options.ElementAt(this.ActiveOptionIndex).Value.Execute();
         }
         public void PrintResources()
         {
             Console.WriteLine("Your current resources:");
-            for (var i=0; i< resources.Length; i++) {
+            for (var i = 0; i < this.Resources.Length; i++)
+            {
 
-                if(i == resources.Length-1)
+                if (i == this.Resources.Length - 1)
                 {
-                    Console.Write("{0}: {1}/{2}\n", resources[i].Name, resources[i].Amount, resources[i].Capacity);
+                    Console.Write("{0}: {1}/{2}\n", this.Resources[i].Name, this.Resources[i].Amount, this.Resources[i].Capacity);
                 }
                 else
                 {
-                    Console.Write("{0}: {1}/{2}, ", resources[i].Name, resources[i].Amount, resources[i].Capacity);
+                    Console.Write("{0}: {1}/{2}, ", this.Resources[i].Name, this.Resources[i].Amount, this.Resources[i].Capacity);
                 }
-            } 
-
+            }
         }
         public void PrintDescription()
         {
             Console.WriteLine(description);
-
         }
         public void PrintOptions()
         {
-            Console.WriteLine("\nWhat do you want to do next: ");
+            string optHeader = this.OptionDescription != "" ? this.OptionDescription : "What do you want to do next";
 
-            for (int i = 0; i < options.Length; i++)
+            Console.WriteLine($"\n{optHeader}: ");
+
+            for (int i = 0; i < this.Options.Count; i++)
             {
-                if (i == activeOptionIndex)
+                if (i == this.ActiveOptionIndex)
                 {
                     Console.BackgroundColor = ConsoleColor.White;
                     Console.ForegroundColor = ConsoleColor.Black;
-                    System.Console.WriteLine(" {0}: {1} ", i, options[i]);
+                    Console.WriteLine(" {0}: {1}", i, this.Options.ElementAt(i).Key);
                     Console.ResetColor();
                 }
                 else
                 {
-                    System.Console.WriteLine(" {0}: {1} ", i, options[i]);
+                    Console.WriteLine(" {0}: {1}", i, this.Options.ElementAt(i).Key);
                 }
             }
         }
 
-        public void UpdateConsole()
+
+        public void RerenderConsole()
         {
             Console.Clear();
             this.PrintResources();
@@ -97,14 +158,14 @@ namespace console_strategy
         }
         public void ReadInput()
         {
-            this.UpdateConsole();
+            this.RerenderConsole();
             ConsoleKeyInfo keyInput = Console.ReadKey(true);
-            while(keyInput.Key != ConsoleKey.Escape)
+            while (keyInput.Key != ConsoleKey.Escape)
             {
                 switch (keyInput.Key)
                 {
                     case ConsoleKey.UpArrow:
-                        this.SelectPrevOption(); 
+                        this.SelectPrevOption();
                         break;
                     case ConsoleKey.DownArrow:
                         this.SelectNextOption();
@@ -113,9 +174,10 @@ namespace console_strategy
                         this.ConfirmSelection();
                         break;
                 }
-                this.UpdateConsole();
+                this.RerenderConsole();
                 keyInput = Console.ReadKey(true);
             }
         }
+
     }
 }

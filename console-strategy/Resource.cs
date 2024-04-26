@@ -10,7 +10,7 @@ namespace console_strategy
     {
         private string name;
         private int amount;
-        private int capacity;
+        private int? capacity;
 
         public Resource(string name, int amount=0, int capacity=0) {
             this.name = name;
@@ -26,7 +26,7 @@ namespace console_strategy
         }
         public int Capacity { 
             set { this.capacity = value; }
-            get { return capacity; } 
+            get { return capacity ?? 0; } 
         }
 
         public void ChangeAmount(int value)

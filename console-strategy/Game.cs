@@ -9,8 +9,9 @@ namespace console_strategy
 {
     internal class Game
     {
+        private int round = 0;
         private ConsoleHandler console;
-        private Town playersTown;
+        public Town playersTown;
 
         //initialize starting town with given resources,
         public Game(int startingWood, int startingStone, int startingGold) {
@@ -18,26 +19,22 @@ namespace console_strategy
             Resource stone = new Resource("Stone", startingStone, 250);
             Resource gold = new Resource("Gold", startingGold, 250);
 
-            string description = "The peasants cheer as [Building Name] is erected in the town square, a symbol of prosperity and community.";
-            string[] options = { "Build", "Upgrade", "Repair", "Overview" };
-
-            Resource[] resources = { wood, stone, gold };
-
             this.playersTown= this.CreateTown(wood, stone, gold);
-            this.console =this.CreateConsole(this.playersTown.Resources, description, options);
+            this.playersTown.GetBaseTownBuildings();
+            this.console = ConsoleHandler.GetInstance();
+
+            this.console.UpdateConsole(this.playersTown.Resources , this.playersTown.GetDescription("welcome"), this.playersTown.GetBaseOptions());
+            this.console.ReadInput();
         }
 
-        protected ConsoleHandler CreateConsole(Resource[] resources, string description, string[] options)
-        {
-            return  new ConsoleHandler(resources, description, options);
-        }
+
         protected Town CreateTown(Resource wood, Resource stone, Resource gold)
         {
             return new Town(wood, stone, gold);
         }
-        public void PrintConsole()
+        public void increaseRound()
         {
-            console.ReadInput();
+            this.round++;
         }
     }
 }
