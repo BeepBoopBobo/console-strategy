@@ -15,7 +15,7 @@ namespace console_strategy
         private string description;
         private string optionDescription;
         private Dictionary<string, Command> options;
-        private Resource[] resources;
+        private List<Resource> resources;
 
         public ConsoleHandler()
         {
@@ -50,7 +50,7 @@ namespace console_strategy
             set { this.options = value; }
             get { return this.options; }
         }
-        public Resource[] Resources
+        public List<Resource> Resources
         {
             set { this.resources = value; }
             get { return this.resources; }
@@ -59,7 +59,7 @@ namespace console_strategy
 
         public string ActiveOption() { return this.Options.ElementAt(activeOptionIndex).Key; }
 
-        public void UpdateResources(Resource[] resources)
+        public void UpdateResources(List<Resource> resources)
         {
             this.Resources = resources;
             this.RerenderConsole();
@@ -74,7 +74,7 @@ namespace console_strategy
             this.Options = options;
             this.RerenderConsole();
         }
-        public void UpdateConsole(Resource[] resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
+        public void UpdateConsole(List<Resource> resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
         {
             this.Resources = resources;
             this.Description = description;
@@ -104,10 +104,10 @@ namespace console_strategy
         public void PrintResources()
         {
             Console.WriteLine("Your current resources:");
-            for (var i = 0; i < this.Resources.Length; i++)
+            for (var i = 0; i < this.Resources.Count; i++)
             {
 
-                if (i == this.Resources.Length - 1)
+                if (i == this.Resources.Count - 1)
                 {
                     Console.Write("{0}: {1}/{2}\n", this.Resources[i].Name, this.Resources[i].Amount, this.Resources[i].Capacity);
                 }

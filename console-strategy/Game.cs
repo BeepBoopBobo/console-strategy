@@ -11,28 +11,29 @@ namespace console_strategy
     {
         private int round = 0;
         private ConsoleHandler console;
+        private List<Resource> usedResources;
         public Town playersTown;
 
         //initialize starting town with given resources,
-        public Game(int startingWood, int startingStone, int startingGold) {
-            Resource wood = new Resource("Wood", startingWood, 250);
-            Resource stone = new Resource("Stone", startingStone, 250);
-            Resource gold = new Resource("Gold", startingGold, 250);
+        public Game(List<Resource> resources)
+        {
+            this.usedResources = resources;
 
-            this.playersTown= this.CreateTown(wood, stone, gold);
+
+            this.playersTown = this.CreateTown();
             this.playersTown.GetBaseTownBuildings();
             this.console = ConsoleHandler.GetInstance();
 
-            this.console.UpdateConsole(this.playersTown.Resources , this.playersTown.GetDescription("welcome"), this.playersTown.GetBaseOptions());
+            this.console.UpdateConsole(this.playersTown.Resources, this.playersTown.GetDescription("welcome"), this.playersTown.GetBaseOptions());
             this.console.ReadInput();
         }
 
 
-        protected Town CreateTown(Resource wood, Resource stone, Resource gold)
+        protected Town CreateTown()
         {
-            return new Town(wood, stone, gold);
+            return new Town(this.usedResources);
         }
-        public void increaseRound()
+        public void IncreaseRound()
         {
             this.round++;
         }

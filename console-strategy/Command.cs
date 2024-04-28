@@ -44,7 +44,7 @@ namespace console_strategy
                 case "Main Menu":
                     this.recieverTown.GoToOverviewMenu();
                     break;
-                    default: break;
+                default: break;
             }
         }
     }

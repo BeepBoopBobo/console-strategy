@@ -9,42 +9,23 @@ namespace console_strategy
 {
     internal class Town
     {
-        private Resource wood;
-        private Resource stone;
-        private Resource gold;
-        private Resource[] resources = new Resource[3];
+        private List<Resource> resources = new List<Resource>();
         private List<Building> buildings = new List<Building>();
 
         private ConsoleHandler console;
 
-        public Town(Resource wood, Resource stone, Resource gold)
+        public Town(List<Resource> resources)
         {
-            this.Wood = wood;
-            this.Stone = stone;
-            this.Gold = gold;
+            this.resources = resources;
 
             this.console = ConsoleHandler.GetInstance();
         }
 
-        public Resource[] Resources
+        public List<Resource> Resources
         {
             get { return this.resources; }
         }
-        public Resource Wood
-        {
-            set { this.wood = value; this.resources[0] = value; }
-            get { return wood; }
-        }
-        public Resource Stone
-        {
-            set { this.stone = value; this.resources[1] = value; }
-            get { return stone; }
-        }
-        public Resource Gold
-        {
-            set { this.gold = value; this.resources[2] = value; }
-            get { return gold; }
-        }
+
 
         public void IncreaseResource(Resource resource, int amount)
         {
@@ -166,20 +147,47 @@ namespace console_strategy
             return baseOptions;
         }
 
+        public List<Resource> RequiredResourcesForBuilding(string buildingType)
+        {
+            List<Resource> requiredResources = new List<Resource>();
+            switch (buildingType)
+            {
+                case "big":
+                    requiredResources.Add(new Resource(name: "Wood", amount: 130, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Stone", amount: 140, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Gold", amount: 100, capacity: 0));
+
+                    break;
+                case "medium":
+                    requiredResources.Add(new Resource(name: "Wood", amount: 90, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Stone", amount: 80, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Gold", amount: 60, capacity: 0));
+
+                    break;
+                case "small":
+                default:
+                    requiredResources.Add(new Resource(name: "Wood", amount: 60, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Stone", amount: 50, capacity: 0));
+                    requiredResources.Add(new Resource(name: "Gold", amount: 40, capacity: 0));
+                    break;
+            }
+
+            return requiredResources;
+        }
         public List<Building> GetBaseTownBuildings()
         {
+
             if (this.buildings.Count == 0)
             {
-                Building barracks = new Building("Barracks", 100, 120, 60, resources, 1);
+                Building barracks = new Building("Barracks", this.RequiredResourcesForBuilding("big"), resources, 1);
                 barracks.HitPoints = 20;
-                this.buildings.Add(new Building("Town Hall", 100, 120, 60, resources, 1));
-                this.buildings.Add(new Building("Inn", 100, 120, 60, resources, 1));
-                this.buildings.Add(new Building("Smith", 100, 120, 60, resources, 1));
+                this.buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), resources, 1));
+                this.buildings.Add(new Building("Inn", this.RequiredResourcesForBuilding("medium"), resources, 1));
+                this.buildings.Add(new Building("Smith", this.RequiredResourcesForBuilding("small"), resources, 1));
                 this.buildings.Add(barracks);
-                this.buildings.Add(new Building("Silo", 100, 120, 60, resources, 0));
-                this.buildings.Add(new Building("Market", 100, 120, 60, resources, 0));
-                this.buildings.Add(new Building("Walls", 100, 120, 60, resources, 0));
-
+                this.buildings.Add(new Building("Silo", this.RequiredResourcesForBuilding("big"), resources, 0));
+                this.buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("big"), resources, 0));
+                this.buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), resources, 0));
                 return this.buildings;
             }
             return this.buildings;

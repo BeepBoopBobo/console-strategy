@@ -9,18 +9,17 @@ namespace console_strategy
     internal class Building
     {
         private string name;
-        private Resource[] requiredResources= new Resource[3];
+        private List<Resource> requiredResources;
 
         private int hitPoints = 100;
         private int maxHitPoints = 100;
         private int level = 1;
 
-        private Resource[] townResources;
-        public Building(string name, int rWood, int rStone, int rGold, Resource[] townResources, int level)
+        private List<Resource> townResources;
+        public Building(string name, List<Resource> requiredResources, List<Resource> townResources, int level)
         {
-            this.requiredResources[0]= new Resource("Wood", rWood);
-            this.requiredResources[1] = new Resource("Stone", rStone);
-            this.requiredResources[2] = new Resource("Gold", rGold);
+            this.requiredResources = requiredResources;
+
 
             this.Name = name;
             this.TownResources = townResources;
@@ -28,7 +27,7 @@ namespace console_strategy
 
         }
 
-        public Resource[] RequiredResources { get { return this.requiredResources; } }
+        public List<Resource> RequiredResources { get { return this.requiredResources; } }
         public string Name { set { this.name = value; } get { return this.name; } }
 
 
@@ -36,14 +35,14 @@ namespace console_strategy
         public int MaxHitPoints { set { this.maxHitPoints = value; } get { return this.maxHitPoints; } }
 
         public int Level { set { this.level = value; } get { return this.level; } }
-        public Resource[] TownResources { set { this.townResources = value; } get { return this.townResources; } }
+        public List<Resource> TownResources { set { this.townResources = value; } get { return this.townResources; } }
         public void Upgrade()
         {
             this.Level++;
         }
         public void Build()
         {
-            if(this.level == 0)
+            if (this.level == 0)
             {
                 this.level = 1;
             }
@@ -52,11 +51,11 @@ namespace console_strategy
         {
             this.HitPoints = this.maxHitPoints;
         }
-        public bool hasEnoughResourcesAmount(string resourceType)
+        public bool HasEnoughResourcesAmount(string resourceType)
         {
             Resource available = this.TownResources.FirstOrDefault(resource => resource.Name == resourceType);
-            Resource required= this.requiredResources.FirstOrDefault(resource => resource.Name == resourceType);
-            if(available != null && required != null)
+            Resource required = this.requiredResources.FirstOrDefault(resource => resource.Name == resourceType);
+            if (available != null && required != null)
             {
                 return available.Amount >= required.Amount;
             }
@@ -64,7 +63,8 @@ namespace console_strategy
         }
         public bool CanUpgradeBuilding()
         {
-            if (hasEnoughResourcesAmount("Gold") && hasEnoughResourcesAmount("Stone") && hasEnoughResourcesAmount("Wood")) { 
+            if (HasEnoughResourcesAmount("Gold") && HasEnoughResourcesAmount("Stone") && HasEnoughResourcesAmount("Wood"))
+            {
                 return true;
             }
             else { return false; }
