@@ -48,6 +48,7 @@ namespace console_strategy
             }
         }
     }
+
     internal class ResourceCommand : Command
     {
         private string command;
@@ -68,10 +69,41 @@ namespace console_strategy
             switch (this.command)
             {
                 case "Add Resource":
-                    this.recieverTown.increaseResource(this.resource, this.amount);
+                    this.recieverTown.IncreaseResource(this.resource, this.amount);
                     break;
                 case "Add Resource Capacity":
-                    this.recieverTown.increaseResourceCapacity(this.resource, this.amount);
+                    this.recieverTown.IncreaseResourceCapacity(this.resource, this.amount);
+                    break;
+                default: break;
+            }
+        }
+    }
+
+    internal class BuildingCommand : Command
+    {
+        private string command;
+        private Building building;
+        private Town recieverTown;
+
+        public BuildingCommand(string command, Town recieverTown, Building building)
+        {
+            this.command = command;
+            this.recieverTown = recieverTown;
+            this.building = building;
+        }
+
+        public override void Execute()
+        {
+            switch (this.command)
+            {
+                case "Upgrade Building":
+                    this.recieverTown.UpgradeBuilding(this.building);
+                    break;
+                case "Build Building":
+                    this.recieverTown.BuildBuilding(this.building);
+                    break;
+                case "Repair Building":
+                    this.recieverTown.RepairBuilding(this.building);
                     break;
                 default: break;
             }

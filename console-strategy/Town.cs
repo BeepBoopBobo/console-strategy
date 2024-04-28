@@ -46,20 +46,35 @@ namespace console_strategy
             get { return gold; }
         }
 
-        public void increaseResource(Resource resource, int amount)
+        public void IncreaseResource(Resource resource, int amount)
         {
             resource.ChangeAmount(amount);
         }
-        public void increaseResourceCapacity(Resource resource, int amount)
+        public void IncreaseResourceCapacity(Resource resource, int amount)
         {
             resource.ChangeCapacity(amount);
         }
 
+        public void UpgradeBuilding(Building building)
+        {
+            building.Upgrade();
+            this.DisplayBuildingList("upgrade");
+        }
+        public void BuildBuilding(Building building)
+        {
+            building.Build();
+            this.DisplayBuildingList("build");
+        }
+        public void RepairBuilding(Building building)
+        {
+            building.Repair();
+            this.DisplayBuildingList("repair");
+        }
         //TODO: check if there are enough resources for the given building,
         //  also if the building's level is below "maximum level"
-        public bool canBuildBuilding(Building building)
+        public bool CanBuildBuilding(Building building)
         {
-            return true;
+            return building.CanUpgradeBuilding();
         }
 
         public void GoToOverviewMenu()
@@ -88,25 +103,26 @@ namespace console_strategy
         {
             Dictionary<string, Command> buildingsOptions = new Dictionary<string, Command>();
 
-            foreach (var building in this.buildings)
+            foreach (Building building in this.buildings)
             {
                 int rWood = building.RequiredResources.First(resource => resource.Name == "Wood").Amount;
                 int rStone = building.RequiredResources.First(resource => resource.Name == "Stone").Amount;
                 int rGold = building.RequiredResources.First(resource => resource.Name == "Gold").Amount;
+                string hasEnoughResources = this.CanBuildBuilding(building) ? "" : "- Not enough resources";
 
                 if (building.Level > 0 && type == "upgrade")
                 {
-                    string buildingInfo = $"{building.Name}, lvl: {building.Level}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}]";
-                    buildingsOptions.Add(buildingInfo, new OptionsCommand("Upgrade Building", this));
+                    string buildingInfo = $"{building.Name}, lvl: {building.Level}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}] {hasEnoughResources}";
+                    buildingsOptions.Add(buildingInfo, new BuildingCommand("Upgrade Building", this, building));
                 }
                 else if (building.Level == 0 && type == "build")
                 {
-                    string buildingInfo = $"{building.Name}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}]";
-                    buildingsOptions.Add(buildingInfo, new OptionsCommand("Build Building", this));
+                    string buildingInfo = $"{building.Name}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}] {hasEnoughResources}";
+                    buildingsOptions.Add(buildingInfo, new BuildingCommand("Build Building", this, building));
                 }
                 else if (type == "repair" && building.HitPoints < building.MaxHitPoints)
                 {
-                    buildingsOptions.Add($"{building.Name}, {building.HitPoints}/{building.MaxHitPoints}HP", new OptionsCommand("Repair Building", this));
+                    buildingsOptions.Add($"{building.Name}, {building.HitPoints}/{building.MaxHitPoints}HP", new BuildingCommand("Repair Building", this, building));
                 }
             }
             buildingsOptions.Add("Go To Town Overview", new OptionsCommand("Main Menu", this));

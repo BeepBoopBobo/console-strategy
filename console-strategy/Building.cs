@@ -37,9 +37,20 @@ namespace console_strategy
 
         public int Level { set { this.level = value; } get { return this.level; } }
         public Resource[] TownResources { set { this.townResources = value; } get { return this.townResources; } }
-        public void UpgradeBuilding()
+        public void Upgrade()
         {
             this.Level++;
+        }
+        public void Build()
+        {
+            if(this.level == 0)
+            {
+                this.level = 1;
+            }
+        }
+        public void Repair()
+        {
+            this.HitPoints = this.maxHitPoints;
         }
         public bool hasEnoughResourcesAmount(string resourceType)
         {
@@ -57,10 +68,6 @@ namespace console_strategy
                 return true;
             }
             else { return false; }
-        }
-        public void PrintInfo()
-        {
-            Console.WriteLine("Building: '{0}' with {1}/{2} HP, level: {3}", this.Name, this.HitPoints, this.MaxHitPoints, this.Level);
         }
 
     }
