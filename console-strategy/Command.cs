@@ -38,10 +38,42 @@ namespace console_strategy
                     break;
                 case "Update":
                     break;
+                case "Debug":
+                    this.recieverTown.DisplayDebugList();
+                    break;
                 case "Main Menu":
                     this.recieverTown.GoToOverviewMenu();
                     break;
                     default: break;
+            }
+        }
+    }
+    internal class ResourceCommand : Command
+    {
+        private string command;
+        private int amount;
+        private Resource resource;
+        private Town recieverTown;
+
+        public ResourceCommand(string command, Town recieverTown, Resource resource, int amount)
+        {
+            this.command = command;
+            this.recieverTown = recieverTown;
+            this.amount = amount;
+            this.resource = resource;
+        }
+
+        public override void Execute()
+        {
+            switch (this.command)
+            {
+                case "Add Resource":
+                    this.recieverTown.increaseResource(this.resource, this.amount);
+                    break;
+                case "Add Resource Capacity":
+                    this.recieverTown.increaseResourceCapacity(this.resource, this.amount);
+                    break;
+                default: break;
             }
         }
     }

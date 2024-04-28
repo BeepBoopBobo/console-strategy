@@ -62,17 +62,17 @@ namespace console_strategy
         public void UpdateResources(Resource[] resources)
         {
             this.Resources = resources;
-
+            this.RerenderConsole();
         }
         public void UpdateDescription(string description)
         {
             this.Description = description;
-
+            this.RerenderConsole();
         }
         public void UpdateOptions(Dictionary<string, Command> options)
         {
             this.Options = options;
-
+            this.RerenderConsole();
         }
         public void UpdateConsole(Resource[] resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
         {
@@ -146,7 +146,7 @@ namespace console_strategy
 
         public void RerenderConsole()
         {
-            Console.Clear();
+            this.ClearConsole();
             this.PrintResources();
             this.PrintDescription();
             this.PrintOptions();
@@ -154,7 +154,6 @@ namespace console_strategy
         public void ClearConsole()
         {
             Console.Clear();
-
         }
         public void ReadInput()
         {
