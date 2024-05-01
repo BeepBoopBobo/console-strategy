@@ -14,6 +14,7 @@ namespace console_strategy
 
         private string description;
         private string optionDescription;
+        private KeyValuePair<string, int> progress;
         private Dictionary<string, Command> options;
         private List<Resource> resources;
 
@@ -45,6 +46,11 @@ namespace console_strategy
             set { this.optionDescription = value; }
             get { return this.optionDescription; }
         }
+        public KeyValuePair<string, int> Progress
+        {
+            set { this.progress = value; }
+            get { return this.progress; }
+        }
         public Dictionary<string, Command> Options
         {
             set { this.options = value; }
@@ -74,6 +80,18 @@ namespace console_strategy
             this.Options = options;
             this.RerenderConsole();
         }
+        public void UpdateProgress(KeyValuePair<string, int> progress)
+        {
+            this.Progress = progress;
+            this.RerenderConsole();
+        }
+        public void UpdateProgressTick(int newTick)
+        {
+            KeyValuePair<string, int> progress = new KeyValuePair<string, int>(this.Progress.Key, newTick);
+            this.Progress = progress;
+            this.RerenderConsole();
+        }
+
         public void UpdateConsole(List<Resource> resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
         {
             this.Resources = resources;
@@ -119,7 +137,19 @@ namespace console_strategy
         }
         public void PrintDescription()
         {
-            Console.WriteLine(description);
+            Console.WriteLine(this.Description);
+        }
+        public void PrintProgress()
+        {
+            string progressBar = "";
+            for (var i = 1; i <= 10; i++)
+            {
+                progressBar += i <= this.progress.Value ? $"■" : " ";
+            }
+            if (this.progress.Key != "" && this.progress.Value < 10)
+            {
+                Console.Write($"\n{this.progress.Key}: \t[{progressBar}]");
+            }
         }
         public void PrintOptions()
         {
@@ -150,6 +180,7 @@ namespace console_strategy
             this.PrintResources();
             this.PrintDescription();
             this.PrintOptions();
+            if (this.Progress.Key != "") this.PrintProgress();
         }
         public void ClearConsole()
         {

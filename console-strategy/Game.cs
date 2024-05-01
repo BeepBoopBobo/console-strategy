@@ -19,7 +19,6 @@ namespace console_strategy
         {
             this.usedResources = resources;
 
-
             this.playersTown = this.CreateTown();
             this.playersTown.GenerateBaseBuildings();
             this.console = ConsoleHandler.GetInstance();

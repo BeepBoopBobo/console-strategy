@@ -14,12 +14,12 @@ namespace console_strategy
         private int hitPoints = 100;
         private int maxHitPoints = 100;
         private int level = 1;
+        private bool isInProgress= false;
 
         private List<Resource> townResources;
         public Building(string name, List<Resource> requiredResources, List<Resource> townResources, int level)
         {
             this.requiredResources = requiredResources;
-
 
             this.Name = name;
             this.TownResources = townResources;
@@ -30,7 +30,7 @@ namespace console_strategy
         public List<Resource> RequiredResources { get { return this.requiredResources; } }
         public string Name { set { this.name = value; } get { return this.name; } }
 
-
+        public bool IsInProgress { set { this.isInProgress = value; }  get { return this.isInProgress; } }
         public int HitPoints { set { this.hitPoints = value; } get { return this.hitPoints; } }
         public int MaxHitPoints { set { this.maxHitPoints = value; } get { return this.maxHitPoints; } }
 
@@ -40,16 +40,35 @@ namespace console_strategy
         {
             this.Level++;
         }
-        public void Build()
+        public async Task Build(ConsoleHandler console)
         {
             if (this.level == 0)
             {
+                await this.StartProcess(console);
                 this.level = 1;
             }
         }
         public void Repair()
         {
             this.HitPoints = this.maxHitPoints;
+        }
+        public int SumResources()
+        {
+            int sum= 0;
+            foreach (var resource in this.RequiredResources)
+            {
+                sum += resource.Amount;
+            }
+            return sum;
+        }
+
+        async Task StartProcess(ConsoleHandler console)
+        {
+            for (int i= 0; i<= 10; i++)
+            {
+                await Task.Delay(this.SumResources()*10);
+                console.UpdateProgressTick(i);
+            }
         }
         public bool HasEnoughResourcesAmount(string resourceType)
         {

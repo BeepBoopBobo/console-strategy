@@ -49,10 +49,17 @@ namespace console_strategy
             building.Upgrade();
             this.DisplayBuildingList("upgrade");
         }
-        public void BuildBuilding(Building building)
+        public async void BuildBuilding(Building building)
         {
-            building.Build();
-            this.DisplayBuildingList("build");
+            Dictionary<string, Command> options = new Dictionary<string, Command>();
+            building.IsInProgress = true;
+            KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, 0);
+            this.console.UpdateProgress(newProgress);
+            await building.Build(this.console);
+            building.IsInProgress = false;
+            options.Add("Okay.", new OptionsCommand("Main Menu", this));
+            this.console.UpdateConsole(this.Resources, $"{building.Name} was built.", options);
+            this.console.RerenderConsole();
         }
         public void RepairBuilding(Building building)
         {
@@ -124,7 +131,7 @@ namespace console_strategy
             switch (type)
             {
                 case "build":
-                    suitableBuildings = this.buildings.Where(building => building.Level == 0).ToList();
+                    suitableBuildings = this.buildings.Where(building => building.Level == 0 && !building.IsInProgress).ToList();
                     desc = "Missing Buildings in this town:";
                     commandType = "Build Building";
                     optDesc = "Choose a Building to be built";
