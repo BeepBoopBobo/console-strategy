@@ -53,8 +53,8 @@ namespace console_strategy
         }
         public bool HasEnoughResourcesAmount(string resourceType)
         {
-            Resource available = this.TownResources.FirstOrDefault(resource => resource.Name == resourceType);
-            Resource required = this.requiredResources.FirstOrDefault(resource => resource.Name == resourceType);
+            Resource available = this.TownResources.First(resource => resource.Name == resourceType);
+            Resource required = this.requiredResources.First(resource => resource.Name == resourceType);
             if (available != null && required != null)
             {
                 return available.Amount >= required.Amount;

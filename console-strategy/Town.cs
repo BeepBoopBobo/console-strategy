@@ -11,12 +11,20 @@ namespace console_strategy
     {
         private List<Resource> resources = new List<Resource>();
         private List<Building> buildings = new List<Building>();
+        private Dictionary<string, string> availableBuildings = new Dictionary<string, string>();
 
         private ConsoleHandler console;
 
         public Town(List<Resource> resources)
         {
             this.resources = resources;
+            this.availableBuildings.Add("Town Hall", "medium");
+            this.availableBuildings.Add("Barracks", "medium");
+            this.availableBuildings.Add("Smith", "small");
+            this.availableBuildings.Add("Silo", "medium");
+            this.availableBuildings.Add("Market", "medium");
+            this.availableBuildings.Add("Walls", "big");
+
 
             this.console = ConsoleHandler.GetInstance();
         }
@@ -65,53 +73,90 @@ namespace console_strategy
 
         public void DisplayDebugList()
         {
+            int amount = 100;
             Dictionary<string, Command> debugList = new Dictionary<string, Command>();
             foreach (Resource resource in this.Resources)
             {
-                int amount = 100;
                 debugList.Add($"Add {amount} {resource.Name}", new ResourceCommand("Add Resource", this, resource, amount));
                 debugList.Add($"Remove {amount} {resource.Name}", new ResourceCommand("Add Resource", this, resource, -amount));
-                debugList.Add($"Add {100} Capacity for {resource.Name}", new ResourceCommand("Add Resource Capacity", this, resource, 100));
-                debugList.Add($"Remove {100} Capacity from {resource.Name}", new ResourceCommand("Add Resource Capacity", this, resource, -100));
-
+                debugList.Add($"Add {amount} Capacity for {resource.Name}", new ResourceCommand("Add Resource Capacity", this, resource, amount));
+                debugList.Add($"Remove {amount} Capacity from {resource.Name}", new ResourceCommand("Add Resource Capacity", this, resource, -amount));
             }
             debugList.Add("Go To Town Overview", new OptionsCommand("Main Menu", this));
 
             this.console.UpdateConsole(this.Resources, "Change values of this town:", debugList);
         }
 
+        public string GetResourceInfo(Building building)
+        {
+            string x="";
+            for (int i = 0; i < building.RequiredResources.Count; i++)
+            {
+                x += $"{building.RequiredResources.ElementAt(i).Name}: {building.RequiredResources.ElementAt(i).Amount}";
+                if(i != building.RequiredResources.Count - 1)
+                {
+                    x += ", ";
+                }
+            }
+            return x;
+        }
+
+
+        public string GetBuildingDesc(Building building)
+        {
+            string hasEnoughResources = this.CanBuildBuilding(building) ? "" : "- Not enough resources";
+
+            string buildingInfo = $"{building.Name}, lvl: {building.Level}, ";
+            string reqResourcesInfo = $"[{this.GetResourceInfo(building)}] {hasEnoughResources}";
+
+            buildingInfo += reqResourcesInfo;
+
+            return buildingInfo;
+        }
+
         public void DisplayBuildingList(string type)
         {
             Dictionary<string, Command> buildingsOptions = new Dictionary<string, Command>();
-
-            foreach (Building building in this.buildings)
+            List<Building> suitableBuildings= new List<Building>();
+            string commandType="";
+            string desc = "";
+            string optDesc = "";
+            switch (type)
             {
-                int rWood = building.RequiredResources.First(resource => resource.Name == "Wood").Amount;
-                int rStone = building.RequiredResources.First(resource => resource.Name == "Stone").Amount;
-                int rGold = building.RequiredResources.First(resource => resource.Name == "Gold").Amount;
-                string hasEnoughResources = this.CanBuildBuilding(building) ? "" : "- Not enough resources";
-
-                if (building.Level > 0 && type == "upgrade")
-                {
-                    string buildingInfo = $"{building.Name}, lvl: {building.Level}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}] {hasEnoughResources}";
-                    buildingsOptions.Add(buildingInfo, new BuildingCommand("Upgrade Building", this, building));
-                }
-                else if (building.Level == 0 && type == "build")
-                {
-                    string buildingInfo = $"{building.Name}, [Wood: {rWood}, Stone: {rStone}, Gold: {rGold}] {hasEnoughResources}";
-                    buildingsOptions.Add(buildingInfo, new BuildingCommand("Build Building", this, building));
-                }
-                else if (type == "repair" && building.HitPoints < building.MaxHitPoints)
-                {
-                    buildingsOptions.Add($"{building.Name}, {building.HitPoints}/{building.MaxHitPoints}HP", new BuildingCommand("Repair Building", this, building));
-                }
+                case "build":
+                    suitableBuildings = this.buildings.Where(building => building.Level == 0).ToList();
+                    desc = "Missing Buildings in this town:";
+                    commandType = "Build Building";
+                    optDesc = "Choose a Building to be built";
+                    break;
+                case "upgrade":
+                    suitableBuildings = this.buildings.Where(building => building.Level > 0).ToList();
+                    desc = "Buildings ready to be upgraded in this town:";
+                    commandType = "Upgrade Building";
+                    optDesc = "Choose a Building to be upgraded";
+                    break;
+                case "repair":
+                    suitableBuildings = this.buildings.Where(building => building.HitPoints < building.MaxHitPoints).ToList();
+                    desc = "Damaged Buildings in this town:";
+                    commandType = "Repair Building";
+                    optDesc = "Choose a Building to be repaired";
+                    break;
+                    default: 
+                        throw new ArgumentException("Given 'type' is not declared.");
             }
+
+
+            foreach (Building building in suitableBuildings)
+            {
+                string buildingInfo = GetBuildingDesc(building);
+                if(type== "repair") buildingInfo = $"{building.HitPoints}/{building.MaxHitPoints} HP, " + buildingInfo;
+                buildingsOptions.Add(buildingInfo, new BuildingCommand(commandType, this, building));
+            }
+
             buildingsOptions.Add("Go To Town Overview", new OptionsCommand("Main Menu", this));
 
-            string optHeader = type == "upgrade" ? "Choose a Building to be upgraded" : type == "build" ? "Choose a Building to be built" : "Choose a Building to be repaired";
-            this.console.UpdateConsole(this.resources, "Buildings in this town:", buildingsOptions, optDescription: optHeader);
+            this.console.UpdateConsole(this.resources, desc, buildingsOptions, optDescription: optDesc);
         }
-
 
         public string GetDescription(string type, Building? building = null, Resource? resource = null)
         {
@@ -174,23 +219,17 @@ namespace console_strategy
 
             return requiredResources;
         }
-        public List<Building> GetBaseTownBuildings()
+        public void GenerateBaseBuildings()
         {
-
-            if (this.buildings.Count == 0)
+            foreach (KeyValuePair<string, string> availableBuilding in this.availableBuildings)
             {
-                Building barracks = new Building("Barracks", this.RequiredResourcesForBuilding("big"), resources, 1);
-                barracks.HitPoints = 20;
-                this.buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), resources, 1));
-                this.buildings.Add(new Building("Inn", this.RequiredResourcesForBuilding("medium"), resources, 1));
-                this.buildings.Add(new Building("Smith", this.RequiredResourcesForBuilding("small"), resources, 1));
-                this.buildings.Add(barracks);
-                this.buildings.Add(new Building("Silo", this.RequiredResourcesForBuilding("big"), resources, 0));
-                this.buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("big"), resources, 0));
-                this.buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), resources, 0));
-                return this.buildings;
+                this.buildings.Add(this.CreateBuilding(availableBuilding.Key, availableBuilding.Value));
             }
-            return this.buildings;
+        }
+
+        public Building CreateBuilding(string name, string type)
+        {
+            return new Building(name, this.RequiredResourcesForBuilding(type), this.resources, name == "Town Hall" ? 1 : 0);
         }
 
     }

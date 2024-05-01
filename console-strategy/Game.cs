@@ -21,7 +21,7 @@ namespace console_strategy
 
 
             this.playersTown = this.CreateTown();
-            this.playersTown.GetBaseTownBuildings();
+            this.playersTown.GenerateBaseBuildings();
             this.console = ConsoleHandler.GetInstance();
 
             this.console.UpdateConsole(this.playersTown.Resources, this.playersTown.GetDescription("welcome"), this.playersTown.GetBaseOptions());
