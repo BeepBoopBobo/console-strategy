@@ -31,9 +31,20 @@ namespace console_strategy
 
         public List<Resource> Resources
         {
+            set { this.resources = value; }
             get { return this.resources; }
         }
+        public Dictionary<string, string> AvailableBuildings
+        {
+            set { this.availableBuildings = value; }
+            get { return this.availableBuildings; }
+        }
 
+        public List<Building> Buildings
+        {
+            set { this.buildings = value; }
+            get { return this.buildings; }
+        }
 
         public void IncreaseResource(Resource resource, int amount)
         {
@@ -49,17 +60,27 @@ namespace console_strategy
             building.Upgrade();
             this.DisplayBuildingList("upgrade");
         }
+        
         public async void BuildBuilding(Building building)
         {
             Dictionary<string, Command> options = new Dictionary<string, Command>();
-            building.IsInProgress = true;
-            KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, 0);
-            this.console.UpdateProgress(newProgress);
-            await building.Build(this.console);
-            building.IsInProgress = false;
-            options.Add("Okay.", new OptionsCommand("Main Menu", this));
-            this.console.UpdateConsole(this.Resources, $"{building.Name} was built.", options);
-            this.console.RerenderConsole();
+
+            if (this.Buildings.Any(building => building.IsInProgress))
+            {
+                options.Add("Okay.", new OptionsCommand("Main Menu", this));
+                this.console.UpdateConsole(this.Resources, "", options, optDescription: "There is another building in progress.");
+            }
+            else
+            {
+                building.IsInProgress = true;
+                KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, 0);
+                this.console.UpdateProgress(newProgress);
+                await building.Build(this.console);
+                building.IsInProgress = false;
+                options.Add("Okay.", new OptionsCommand("Main Menu", this));
+                this.console.UpdateConsole(this.Resources, $"{building.Name} was built.", options);
+                this.console.RerenderConsole();
+            }
         }
         public void RepairBuilding(Building building)
         {
@@ -96,11 +117,11 @@ namespace console_strategy
 
         public string GetResourceInfo(Building building)
         {
-            string x="";
+            string x = "";
             for (int i = 0; i < building.RequiredResources.Count; i++)
             {
                 x += $"{building.RequiredResources.ElementAt(i).Name}: {building.RequiredResources.ElementAt(i).Amount}";
-                if(i != building.RequiredResources.Count - 1)
+                if (i != building.RequiredResources.Count - 1)
                 {
                     x += ", ";
                 }
@@ -124,8 +145,8 @@ namespace console_strategy
         public void DisplayBuildingList(string type)
         {
             Dictionary<string, Command> buildingsOptions = new Dictionary<string, Command>();
-            List<Building> suitableBuildings= new List<Building>();
-            string commandType="";
+            List<Building> suitableBuildings = new List<Building>();
+            string commandType = "";
             string desc = "";
             string optDesc = "";
             switch (type)
@@ -148,15 +169,15 @@ namespace console_strategy
                     commandType = "Repair Building";
                     optDesc = "Choose a Building to be repaired";
                     break;
-                    default: 
-                        throw new ArgumentException("Given 'type' is not declared.");
+                default:
+                    throw new ArgumentException("Given 'type' is not declared.");
             }
 
 
             foreach (Building building in suitableBuildings)
             {
                 string buildingInfo = GetBuildingDesc(building);
-                if(type== "repair") buildingInfo = $"{building.HitPoints}/{building.MaxHitPoints} HP, " + buildingInfo;
+                if (type == "repair") buildingInfo = $"{building.HitPoints}/{building.MaxHitPoints} HP, " + buildingInfo;
                 buildingsOptions.Add(buildingInfo, new BuildingCommand(commandType, this, building));
             }
 
@@ -228,9 +249,9 @@ namespace console_strategy
         }
         public void GenerateBaseBuildings()
         {
-            foreach (KeyValuePair<string, string> availableBuilding in this.availableBuildings)
+            foreach (KeyValuePair<string, string> availableBuilding in this.AvailableBuildings)
             {
-                this.buildings.Add(this.CreateBuilding(availableBuilding.Key, availableBuilding.Value));
+                this.Buildings.Add(this.CreateBuilding(availableBuilding.Key, availableBuilding.Value));
             }
         }
 
