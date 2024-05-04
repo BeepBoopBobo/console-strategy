@@ -10,6 +10,8 @@ namespace console_strategy
     internal class Game
     {
         private int round = 0;
+        private bool isGameOver = false;
+
         private ConsoleHandler console;
         private List<Resource> usedResources;
         public Town playersTown;
@@ -18,12 +20,10 @@ namespace console_strategy
         public Game(List<Resource> resources)
         {
             this.usedResources = resources;
-
             this.playersTown = this.CreateTown();
             this.playersTown.GenerateBaseBuildings();
             this.console = ConsoleHandler.GetInstance();
-
-            this.console.UpdateConsole(this.playersTown.Resources, this.playersTown.GetDescription("welcome"), this.playersTown.GetBaseOptions());
+            this.StartGeneratingResources();
             this.console.ReadInput();
         }
 
@@ -32,6 +32,23 @@ namespace console_strategy
         {
             return new Town(this.usedResources);
         }
+
+        public async void StartGeneratingResources()
+        {
+            await this.AwardResources();
+        }
+        async Task AwardResources()
+        {
+            while (!this.isGameOver)
+            {
+                await Task.Delay(30000);
+                this.usedResources.ForEach(resource =>
+                {
+                    int resAmount = this.playersTown.ResourceProduction.Find(res => res.Name == resource.Name).Amount;
+                    this.playersTown.IncreaseResource(resource, resAmount);
+                });
+            }
+        } 
         public void IncreaseRound()
         {
             this.round++;

@@ -17,6 +17,8 @@ namespace console_strategy
         private KeyValuePair<string, int> progress;
         private Dictionary<string, Command> options;
         private List<Resource> resources;
+        private List<Resource> resourceProduction;
+
 
         public ConsoleHandler()
         {
@@ -61,6 +63,11 @@ namespace console_strategy
             set { this.resources = value; }
             get { return this.resources; }
         }
+        public List<Resource> ResourceProduction
+        {
+            set { this.resourceProduction = value; }
+            get { return this.resourceProduction; }
+        }
 
 
         public string ActiveOption() { return this.Options.ElementAt(activeOptionIndex).Key; }
@@ -92,9 +99,10 @@ namespace console_strategy
             this.RerenderConsole();
         }
 
-        public void UpdateConsole(List<Resource> resources, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
+        public void UpdateConsole(List<Resource> resources, List<Resource> production, string description, Dictionary<string, Command> options, int activeOptionIndex = 0, string optDescription = "")
         {
             this.Resources = resources;
+            this.ResourceProduction = production;
             this.Description = description;
             this.optionDescription = optDescription;
             this.Options = options;
@@ -127,11 +135,11 @@ namespace console_strategy
 
                 if (i == this.Resources.Count - 1)
                 {
-                    Console.Write("{0}: {1}/{2}\n", this.Resources[i].Name, this.Resources[i].Amount, this.Resources[i].Capacity);
+                    Console.Write($"{this.Resources[i].Name}: {this.Resources[i].Amount}/{this.Resources[i].Capacity}(+{this.ResourceProduction[i].Amount})\n");
                 }
                 else
                 {
-                    Console.Write("{0}: {1}/{2}, ", this.Resources[i].Name, this.Resources[i].Amount, this.Resources[i].Capacity);
+                    Console.Write($"{this.Resources[i].Name}: {this.Resources[i].Amount}/{this.Resources[i].Capacity}(+{this.ResourceProduction[i].Amount}), ");
                 }
             }
         }

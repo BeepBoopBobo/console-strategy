@@ -10,6 +10,8 @@ namespace console_strategy
     internal class Town
     {
         private List<Resource> resources = new List<Resource>();
+        private List<Resource> resourceProduction = new List<Resource>();
+
         private List<Building> buildings = new List<Building>();
         private Dictionary<string, string> availableBuildings = new Dictionary<string, string>();
 
@@ -18,6 +20,11 @@ namespace console_strategy
         public Town(List<Resource> resources)
         {
             this.resources = resources;
+
+            List<Resource> resourceProduction = new List<Resource>();
+            this.resources.ForEach(resource => resourceProduction.Add(new Resource(resource.Name, amount: 10)));
+            this.resourceProduction = resourceProduction;
+
             this.availableBuildings.Add("Town Hall", "medium");
             this.availableBuildings.Add("Barracks", "medium");
             this.availableBuildings.Add("Smith", "small");
@@ -25,14 +32,19 @@ namespace console_strategy
             this.availableBuildings.Add("Market", "medium");
             this.availableBuildings.Add("Walls", "big");
 
-
             this.console = ConsoleHandler.GetInstance();
+            this.console.UpdateConsole(this.Resources, this.ResourceProduction, this.GetDescription("welcome"), this.GetBaseOptions());
         }
 
         public List<Resource> Resources
         {
             set { this.resources = value; }
             get { return this.resources; }
+        }
+        public List<Resource> ResourceProduction
+        {
+            set { this.resourceProduction = value; }
+            get { return this.resourceProduction; }
         }
         public Dictionary<string, string> AvailableBuildings
         {
@@ -49,10 +61,13 @@ namespace console_strategy
         public void IncreaseResource(Resource resource, int amount)
         {
             resource.ChangeAmount(amount);
+            this.console.UpdateResources(this.Resources);
         }
         public void IncreaseResourceCapacity(Resource resource, int amount)
         {
             resource.ChangeCapacity(amount);
+            this.console.UpdateResources(this.Resources);
+
         }
 
         public void UpgradeBuilding(Building building)
@@ -60,7 +75,7 @@ namespace console_strategy
             building.Upgrade();
             this.DisplayBuildingList("upgrade");
         }
-        
+
         public async void BuildBuilding(Building building)
         {
             Dictionary<string, Command> options = new Dictionary<string, Command>();
@@ -68,7 +83,7 @@ namespace console_strategy
             if (this.Buildings.Any(building => building.IsInProgress))
             {
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
-                this.console.UpdateConsole(this.Resources, "", options, optDescription: "There is another building in progress.");
+                this.console.UpdateConsole(this.Resources,this.ResourceProduction, "", options, optDescription: "There is another building in progress.");
             }
             else
             {
@@ -78,7 +93,7 @@ namespace console_strategy
                 await building.Build(this.console);
                 building.IsInProgress = false;
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
-                this.console.UpdateConsole(this.Resources, $"{building.Name} was built.", options);
+                this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} was built.", options);
                 this.console.RerenderConsole();
             }
         }
@@ -96,7 +111,7 @@ namespace console_strategy
 
         public void GoToOverviewMenu()
         {
-            this.console.UpdateConsole(this.Resources, this.GetDescription("overview"), this.GetBaseOptions());
+            this.console.UpdateConsole(this.Resources, this.ResourceProduction, this.GetDescription("overview"), this.GetBaseOptions());
         }
 
         public void DisplayDebugList()
@@ -112,7 +127,7 @@ namespace console_strategy
             }
             debugList.Add("Go To Town Overview", new OptionsCommand("Main Menu", this));
 
-            this.console.UpdateConsole(this.Resources, "Change values of this town:", debugList);
+            this.console.UpdateConsole(this.Resources, this.ResourceProduction, "Change values of this town:", debugList);
         }
 
         public string GetResourceInfo(Building building)
@@ -183,7 +198,7 @@ namespace console_strategy
 
             buildingsOptions.Add("Go To Town Overview", new OptionsCommand("Main Menu", this));
 
-            this.console.UpdateConsole(this.resources, desc, buildingsOptions, optDescription: optDesc);
+            this.console.UpdateConsole(this.Resources, this.ResourceProduction, desc, buildingsOptions, optDescription: optDesc);
         }
 
         public string GetDescription(string type, Building? building = null, Resource? resource = null)
@@ -257,7 +272,7 @@ namespace console_strategy
 
         public Building CreateBuilding(string name, string type)
         {
-            return new Building(name, this.RequiredResourcesForBuilding(type), this.resources, name == "Town Hall" ? 1 : 0);
+            return new Building(name, this.RequiredResourcesForBuilding(type), this.Resources, name == "Town Hall" ? 1 : 0);
         }
 
     }
