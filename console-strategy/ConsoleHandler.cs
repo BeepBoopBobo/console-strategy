@@ -188,7 +188,7 @@ namespace console_strategy
             this.PrintResources();
             this.PrintDescription();
             this.PrintOptions();
-            if (this.Progress.Key != "") this.PrintProgress();
+            if (this.Progress.Key != null) this.PrintProgress();
         }
         public void ClearConsole()
         {
