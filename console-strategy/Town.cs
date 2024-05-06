@@ -58,45 +58,56 @@ namespace console_strategy
             get { return this.buildings; }
         }
 
-        public void IncreaseResource(Resource resource, int amount)
+        public void ChangeResourceAmount(Resource resource, int amount)
         {
             resource.ChangeAmount(amount);
             this.console.UpdateResources(this.Resources);
         }
-        public void IncreaseResourceCapacity(Resource resource, int amount)
+        public void ChangeResourceCapacity(Resource resource, int amount)
         {
             resource.ChangeCapacity(amount);
             this.console.UpdateResources(this.Resources);
-
         }
 
-        public void UpgradeBuilding(Building building)
+        public void ResourcesForBuilding(Building building)
         {
-            building.Upgrade();
-            this.DisplayBuildingList("upgrade");
+            building.RequiredResources.ForEach(resource => {
+                var currRes= this.Resources.First(res => res.Name == resource.Name);
+                var reqAmount= building.RequiredResources.First(res => res.Name == resource.Name).Amount;
+                this.ChangeResourceAmount(currRes, -reqAmount);
+                });
         }
-
-        public async void BuildBuilding(Building building)
+        public async void UpgradeBuilding(Building building)
         {
             Dictionary<string, Command> options = new Dictionary<string, Command>();
 
             if (this.Buildings.Any(building => building.IsInProgress))
             {
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
-                this.console.UpdateConsole(this.Resources,this.ResourceProduction, "", options, optDescription: "There is another building in progress.");
+                this.console.UpdateConsole(this.Resources, this.ResourceProduction, "", options, optDescription: "There is another building in progress.");
             }
             else
             {
                 building.IsInProgress = true;
-                KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, 0);
+                KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, building.Level);
+                this.ResourcesForBuilding(building);
                 this.console.UpdateProgress(newProgress);
-                await building.Build(this.console);
+                if (building.Level == 0)
+                {
+                    await building.Build(this.console);
+                }
+                else
+                {
+                    await building.Upgrade(this.console);
+                }
                 building.IsInProgress = false;
+
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
-                this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} was built.", options);
+                this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} at {building.Level} was completed.", options);
                 this.console.RerenderConsole();
             }
         }
+
         public void RepairBuilding(Building building)
         {
             building.Repair();

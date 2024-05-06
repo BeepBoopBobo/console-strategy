@@ -41,11 +41,11 @@ namespace console_strategy
         {
             while (!this.isGameOver)
             {
-                await Task.Delay(30000);
+                await Task.Delay(10000);
                 this.usedResources.ForEach(resource =>
                 {
-                    int resAmount = this.playersTown.ResourceProduction.Find(res => res.Name == resource.Name).Amount;
-                    this.playersTown.IncreaseResource(resource, resAmount);
+                    int resAmount = this.playersTown.ResourceProduction.First(res => res.Name == resource.Name).Amount;
+                    this.playersTown.ChangeResourceAmount(resource, resAmount);
                 });
             }
         } 

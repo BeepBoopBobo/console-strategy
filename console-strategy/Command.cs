@@ -69,10 +69,10 @@ namespace console_strategy
             switch (this.command)
             {
                 case "Add Resource":
-                    this.recieverTown.IncreaseResource(this.resource, this.amount);
+                    this.recieverTown.ChangeResourceAmount(this.resource, this.amount);
                     break;
                 case "Add Resource Capacity":
-                    this.recieverTown.IncreaseResourceCapacity(this.resource, this.amount);
+                    this.recieverTown.ChangeResourceCapacity(this.resource, this.amount);
                     break;
                 default: break;
             }
@@ -97,10 +97,8 @@ namespace console_strategy
             switch (this.command)
             {
                 case "Upgrade Building":
-                    this.recieverTown.UpgradeBuilding(this.building);
-                    break;
                 case "Build Building":
-                    this.recieverTown.BuildBuilding(this.building);
+                    this.recieverTown.UpgradeBuilding(this.building);
                     break;
                 case "Repair Building":
                     this.recieverTown.RepairBuilding(this.building);

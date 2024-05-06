@@ -28,7 +28,7 @@ namespace console_strategy
         }
 
         public List<Resource> RequiredResources { get { return this.requiredResources; } }
-        public string Name { set { this.name = value; } get { return this.name; } }
+        public string Name { set { this.name = value; } get { return this.name; } } 
 
         public bool IsInProgress { set { this.isInProgress = value; }  get { return this.isInProgress; } }
         public int HitPoints { set { this.hitPoints = value; } get { return this.hitPoints; } }
@@ -36,8 +36,9 @@ namespace console_strategy
 
         public int Level { set { this.level = value; } get { return this.level; } }
         public List<Resource> TownResources { set { this.townResources = value; } get { return this.townResources; } }
-        public void Upgrade()
+        public async Task Upgrade(ConsoleHandler console)
         {
+            await this.StartProcess(console);
             this.Level++;
         }
         public async Task Build(ConsoleHandler console)
