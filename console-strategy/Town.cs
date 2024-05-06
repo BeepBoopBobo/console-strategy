@@ -85,6 +85,10 @@ namespace console_strategy
             {
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
                 this.console.UpdateConsole(this.Resources, this.ResourceProduction, "", options, optDescription: "There is another building in progress.");
+            } else if (!building.CanUpgradeBuilding())
+            {
+                options.Add("Okay.", new OptionsCommand("Main Menu", this));
+                this.console.UpdateConsole(this.Resources, this.ResourceProduction, "", options, optDescription: "You do not have enough resources.");
             }
             else
             {
@@ -103,7 +107,7 @@ namespace console_strategy
                 building.IsInProgress = false;
 
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
-                this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} at {building.Level} was completed.", options);
+                this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} at level {building.Level} was completed.", options);
                 this.console.RerenderConsole();
             }
         }
