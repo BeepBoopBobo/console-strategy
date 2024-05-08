@@ -42,7 +42,7 @@ namespace console_strategy
         {
             while (!this.isGameOver)
             {
-                await Task.Delay(10000);
+                await Task.Delay(1000);
                 this.usedResources.ForEach(resource =>
                 {
                     int resAmount = this.playersTown.ResourceProduction.First(res => res.Name == resource.Name).Amount;

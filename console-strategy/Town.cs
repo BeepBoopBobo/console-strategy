@@ -64,6 +64,16 @@ namespace console_strategy
                 this.ChangeResourceAmount(currRes, -reqAmount);
             });
         }
+
+        public void UpdateResourceCapacity()
+        {
+            List<Storage> storageBuildings = this.Buildings.FindAll(building => building is Storage).Select(building => (Storage)building).ToList();
+            storageBuildings.ForEach(building =>
+            {
+                Resource currRes = this.Resources.First(resource => resource == building.StorageType);
+                currRes.Capacity = building.AdditionalCapacity;
+            });
+        }
         public async void UpgradeBuilding(Building building)
         {
             Dictionary<string, Command> options = new Dictionary<string, Command>();
@@ -81,12 +91,14 @@ namespace console_strategy
             else
             {
                 building.IsInProgress = true;
-                KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, building.Level);
+                KeyValuePair<string, int> newProgress = new KeyValuePair<string, int>(building.Name, 0);
                 this.ResourcesForBuilding(building);
                 this.console.UpdateProgress(newProgress);
-                if (building.Level == 0)
+
+                if(building is Storage)
                 {
-                    await building.Build(this.console);
+                    await ((Storage)building).Upgrade(this.console);
+                    this.UpdateResourceCapacity();
                 }
                 else
                 {
@@ -97,6 +109,7 @@ namespace console_strategy
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
                 this.console.UpdateConsole(this.Resources, this.ResourceProduction, $"{building.Name} at level {building.Level} was completed.", options);
                 this.console.RerenderConsole();
+
             }
         }
 
@@ -303,9 +316,13 @@ namespace console_strategy
         {
             this.Buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
             this.Buildings.Add(new Blacksmith(this.RequiredResourcesForBuilding("small"), this.Resources, level: 1));
+            this.Buildings.Add(new Storage("Wood Storage", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(0)));
+            this.Buildings.Add(new Storage("Stone Storage", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(1)));
+            this.Buildings.Add(new Storage("Bank", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(2), level: 2));
             this.Buildings.Add(new Barracks(this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
             this.Buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("medium"), this.Resources));
             this.Buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), this.Resources));
+            this.UpdateResourceCapacity();
         }
     }
 }

@@ -40,14 +40,7 @@ namespace console_strategy
             await this.StartProcess(console);
             this.Level++;
         }
-        public async Task Build(ConsoleHandler console)
-        {
-            if (this.level == 0)
-            {
-                await this.StartProcess(console);
-                this.level = 1;
-            }
-        }
+
         public void Repair()
         {
             this.HitPoints = this.maxHitPoints;
@@ -66,7 +59,7 @@ namespace console_strategy
         {
             for (int i= 0; i<= 10; i++)
             {
-                await Task.Delay(this.SumResources()*10);
+                await Task.Delay(this.SumResources());
                 console.UpdateProgressTick(i);
             }
         }
@@ -100,10 +93,10 @@ namespace console_strategy
             base(name, requiredResources, townResources, level)
         {
             this.StorageType = storageType;
-            this.additionalCapacity = CalculateStorage();
+            this.additionalCapacity = this.CalculateStorage();
         }
 
-        public int AdditionalResources
+        public int AdditionalCapacity
         {
             set { this.additionalCapacity = value; }
             get { return this.additionalCapacity; }
@@ -116,8 +109,8 @@ namespace console_strategy
 
         private int CalculateStorage()
         {
-            int sum = 0;
-            for (int i = 0;i<this.Level; i++) {
+            int sum = 100;
+            for (int i = 0;i<=this.Level; i++) {
                 sum = sum + i * 250;
             }
             return sum;
@@ -126,7 +119,7 @@ namespace console_strategy
         public new async Task Upgrade(ConsoleHandler console)
         {
             await base.Upgrade(console);
-            this.AdditionalResources= this.CalculateStorage();
+            this.additionalCapacity = this.CalculateStorage();
         }
     }
 
