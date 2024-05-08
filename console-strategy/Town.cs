@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace console_strategy
 {
@@ -13,27 +14,17 @@ namespace console_strategy
         private List<Resource> resourceProduction = new List<Resource>();
 
         private List<Building> buildings = new List<Building>();
-        private Dictionary<string, string> availableBuildings = new Dictionary<string, string>();
 
         private ConsoleHandler console;
 
         public Town(List<Resource> resources)
         {
             this.resources = resources;
-
             List<Resource> resourceProduction = new List<Resource>();
             this.resources.ForEach(resource => resourceProduction.Add(new Resource(resource.Name, amount: 10)));
             this.resourceProduction = resourceProduction;
 
-            this.availableBuildings.Add("Town Hall", "medium");
-            this.availableBuildings.Add("Barracks", "medium");
-            this.availableBuildings.Add("Smith", "small");
-            this.availableBuildings.Add("Silo", "medium");
-            this.availableBuildings.Add("Market", "medium");
-            this.availableBuildings.Add("Walls", "big");
-
             this.console = ConsoleHandler.GetInstance();
-            this.console.UpdateConsole(this.Resources, this.ResourceProduction, this.GetDescription("welcome"), this.GetBaseOptions());
         }
 
         public List<Resource> Resources
@@ -45,11 +36,6 @@ namespace console_strategy
         {
             set { this.resourceProduction = value; }
             get { return this.resourceProduction; }
-        }
-        public Dictionary<string, string> AvailableBuildings
-        {
-            set { this.availableBuildings = value; }
-            get { return this.availableBuildings; }
         }
 
         public List<Building> Buildings
@@ -71,11 +57,12 @@ namespace console_strategy
 
         public void ResourcesForBuilding(Building building)
         {
-            building.RequiredResources.ForEach(resource => {
-                var currRes= this.Resources.First(res => res.Name == resource.Name);
-                var reqAmount= building.RequiredResources.First(res => res.Name == resource.Name).Amount;
+            building.RequiredResources.ForEach(resource =>
+            {
+                var currRes = this.Resources.First(res => res.Name == resource.Name);
+                var reqAmount = building.RequiredResources.First(res => res.Name == resource.Name).Amount;
                 this.ChangeResourceAmount(currRes, -reqAmount);
-                });
+            });
         }
         public async void UpgradeBuilding(Building building)
         {
@@ -85,7 +72,8 @@ namespace console_strategy
             {
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
                 this.console.UpdateConsole(this.Resources, this.ResourceProduction, "", options, optDescription: "There is another building in progress.");
-            } else if (!building.CanUpgradeBuilding())
+            }
+            else if (!building.CanUpgradeBuilding())
             {
                 options.Add("Okay.", new OptionsCommand("Main Menu", this));
                 this.console.UpdateConsole(this.Resources, this.ResourceProduction, "", options, optDescription: "You do not have enough resources.");
@@ -237,17 +225,57 @@ namespace console_strategy
         {
             Dictionary<string, Command> baseOptions = new Dictionary<string, Command>();
             baseOptions.Add("Upgrade a Building", new OptionsCommand("Upgrade Buildings", this));
-            baseOptions.Add("Build a Building", new OptionsCommand("Build Buildings", this));
-
-            //TODO: check if there are any damaged buildings
-            baseOptions.Add("Repair a Building", new OptionsCommand("Repair Buildings", this));
-
-            //TODO: check if there are barracks in the town
-            baseOptions.Add("Train Troops", new OptionsCommand("List Buildings", this));
+            if (this.IsAnyBuildingSpotLeft())
+            {
+                baseOptions.Add("Build a Building", new OptionsCommand("Build Buildings", this));
+            }
+            if (this.IsAnyBuildingDamaged())
+            {
+                baseOptions.Add("Repair a Building", new OptionsCommand("Repair Buildings", this));
+            }
+            if (this.IsAbleToTrainTroops())
+            {
+                baseOptions.Add("Train Troops", new OptionsCommand("List Buildings", this));
+            }
             baseOptions.Add("Debug", new OptionsCommand("Debug", this));
 
 
             return baseOptions;
+        }
+
+        public bool IsAnyBuildingDamaged()
+        {
+            foreach (var building in this.Buildings)
+            {
+                if (building.HitPoints < building.MaxHitPoints)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool IsAnyBuildingSpotLeft()
+        {
+            foreach (var building in this.Buildings)
+            {
+                if (building.Level==0)
+                {
+                    return true;
+                }
+            }
+            return true;
+        }
+        public bool IsAbleToTrainTroops()
+        {
+            foreach (var building in this.Buildings)
+            {
+                if (building is Blacksmith && building.Level > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public List<Resource> RequiredResourcesForBuilding(string buildingType)
@@ -279,16 +307,16 @@ namespace console_strategy
         }
         public void GenerateBaseBuildings()
         {
-            foreach (KeyValuePair<string, string> availableBuilding in this.AvailableBuildings)
-            {
-                this.Buildings.Add(this.CreateBuilding(availableBuilding.Key, availableBuilding.Value));
-            }
+
+
+            this.Buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), this.Resources,level:1));
+            this.Buildings.Add(new Blacksmith(this.RequiredResourcesForBuilding("small"), this.Resources, level:1));
+            this.Buildings.Add(new Barracks(this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
+            this.Buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("medium"), this.Resources));
+            this.Buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), this.Resources));
+
         }
 
-        public Building CreateBuilding(string name, string type)
-        {
-            return new Building(name, this.RequiredResourcesForBuilding(type), this.Resources, name == "Town Hall" ? 1 : 0);
-        }
 
     }
 }

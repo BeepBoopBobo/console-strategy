@@ -23,6 +23,7 @@ namespace console_strategy
             this.playersTown = this.CreateTown();
             this.playersTown.GenerateBaseBuildings();
             this.console = ConsoleHandler.GetInstance();
+            this.playersTown.GoToOverviewMenu();
             this.StartGeneratingResources();
             this.console.ReadInput();
         }

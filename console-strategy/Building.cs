@@ -17,17 +17,16 @@ namespace console_strategy
         private bool isInProgress= false;
 
         private List<Resource> townResources;
-        public Building(string name, List<Resource> requiredResources, List<Resource> townResources, int level)
+        public Building(string name, List<Resource> requiredResources, List<Resource> townResources, int level=0)
         {
-            this.requiredResources = requiredResources;
-
+            this.RequiredResources = requiredResources;
             this.Name = name;
             this.TownResources = townResources;
             this.Level = level;
-
         }
 
-        public List<Resource> RequiredResources { get { return this.requiredResources; } }
+
+        public List<Resource> RequiredResources { set { this.requiredResources = value; } get { return this.requiredResources; } }
         public string Name { set { this.name = value; } get { return this.name; } } 
 
         public bool IsInProgress { set { this.isInProgress = value; }  get { return this.isInProgress; } }
@@ -63,7 +62,7 @@ namespace console_strategy
             return sum;
         }
 
-        async Task StartProcess(ConsoleHandler console)
+        public async Task StartProcess(ConsoleHandler console)
         {
             for (int i= 0; i<= 10; i++)
             {
@@ -90,5 +89,94 @@ namespace console_strategy
             else { return false; }
         }
 
+    }
+
+    internal class Storage : Building
+    {
+        private int additionalCapacity;
+        private Resource storageType;
+
+        public Storage(string name, List<Resource> requiredResources, List<Resource> townResources, Resource storageType, int level = 0): 
+            base(name, requiredResources, townResources, level)
+        {
+            this.StorageType = storageType;
+            this.additionalCapacity = CalculateStorage();
+        }
+
+        public int AdditionalResources
+        {
+            set { this.additionalCapacity = value; }
+            get { return this.additionalCapacity; }
+        }
+        public Resource StorageType
+        {
+            set { this.storageType = value; }
+            get { return this.storageType; }
+        }
+
+        private int CalculateStorage()
+        {
+            int sum = 0;
+            for (int i = 0;i<this.Level; i++) {
+                sum = sum + i * 250;
+            }
+            return sum;
+        }
+
+        public new async Task Upgrade(ConsoleHandler console)
+        {
+            await base.Upgrade(console);
+            this.AdditionalResources= this.CalculateStorage();
+        }
+    }
+
+    internal class Barracks : Building
+    {
+        private bool canTrainTroops;
+
+        public Barracks(List<Resource> requiredResources, List<Resource> townResources, int level = 0, string name = "Barracks") : 
+            base(name, requiredResources, townResources, level)
+        {
+            this.canTrainTroops = this.CanTrainTroops();
+        }
+
+        public bool CanTrainTroops()
+        {
+            return this.Level > 0 && this.HitPoints > 0;
+        }
+    }
+
+    internal class Blacksmith: Building
+    {
+        private bool canCreateEquipment;
+
+        public Blacksmith(List<Resource> requiredResources, List<Resource> townResources, int level = 0, string name = "Blacksmith") :
+            base(name, requiredResources, townResources, level)
+        {
+            this.canCreateEquipment = this.Level>0 && this.HitPoints>0;
+        }
+
+        //TODO: implement equipment class and change the string to Equipment
+        public bool CanCreateSpecificItem(string type="")
+        {
+            switch (type)
+            {
+                case "plate armor":
+                case "halberd":
+                    return this.Level >= 3 && this.HitPoints > 0;
+                case "mail armor":
+                case "crossbow":
+                case "spear":
+                case "shield":
+                    return this.Level >= 2 && this.HitPoints > 0;
+                case "leather armor":
+                case "sword":
+                case "bow":
+                    return this.Level >= 1 && this.HitPoints > 0;
+                default:
+                    return this.Level > 0 && this.HitPoints > 0;
+            }
+            
+        }
     }
 }
