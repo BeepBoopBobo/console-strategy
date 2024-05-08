@@ -119,10 +119,46 @@ namespace console_strategy
         public new async Task Upgrade(ConsoleHandler console)
         {
             await base.Upgrade(console);
-            this.additionalCapacity = this.CalculateStorage();
+            this.AdditionalCapacity = this.CalculateStorage();
         }
     }
+    internal class Production: Building
+    {
+        private int additionalProduction;
+        private Resource productionType;
+        public Production(string name, List<Resource> requiredResources, List<Resource> townResources, Resource productionType, int level = 0) :
+    base(name, requiredResources, townResources, level)
+        {
+            this.ProductionType = productionType;
+            this.additionalProduction = this.CalculateProduction();
+        }
 
+        public int AdditionalProduction
+        {
+            set { this.additionalProduction = value; }
+            get { return this.additionalProduction; }
+        }
+        public Resource ProductionType
+        {
+            set { this.productionType = value; }
+            get { return this.productionType; }
+        }
+        private int CalculateProduction()
+        {
+            int sum = this.Level==0?10 :0;
+            for (int i = 0; i <= this.Level; i++)
+            {
+                sum = sum + i * 25;
+            }
+            return sum;
+        }
+
+        public new async Task Upgrade(ConsoleHandler console)
+        {
+            await base.Upgrade(console);
+            this.AdditionalProduction = this.CalculateProduction();
+        }
+    }
     internal class Barracks : Building
     {
         private bool canTrainTroops;

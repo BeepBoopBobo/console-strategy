@@ -74,6 +74,18 @@ namespace console_strategy
                 currRes.Capacity = building.AdditionalCapacity;
             });
         }
+
+        public void UpdateResourceProduction()
+        {
+            List<Production> productionBuildings = this.Buildings.FindAll(building => building is Production).Select(building => (Production)building).ToList();
+
+            productionBuildings.ForEach(building =>
+            {
+                Resource currRes = this.ResourceProduction.First(resource => resource.Name == building.ProductionType.Name);
+                currRes.Amount = building.AdditionalProduction;
+            });
+        }
+
         public async void UpgradeBuilding(Building building)
         {
             Dictionary<string, Command> options = new Dictionary<string, Command>();
@@ -99,6 +111,10 @@ namespace console_strategy
                 {
                     await ((Storage)building).Upgrade(this.console);
                     this.UpdateResourceCapacity();
+                }else if(building is Production)
+                {
+                    await ((Production)building).Upgrade(this.console);
+                    this.UpdateResourceProduction();
                 }
                 else
                 {
@@ -316,9 +332,15 @@ namespace console_strategy
         {
             this.Buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
             this.Buildings.Add(new Blacksmith(this.RequiredResourcesForBuilding("small"), this.Resources, level: 1));
+
             this.Buildings.Add(new Storage("Wood Storage", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(0)));
             this.Buildings.Add(new Storage("Stone Storage", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(1)));
-            this.Buildings.Add(new Storage("Bank", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(2), level: 2));
+            this.Buildings.Add(new Storage("Bank", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(2)));
+
+            this.Buildings.Add(new Production("Sawmill", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(0)));
+            this.Buildings.Add(new Production("Quarry", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(1)));
+            this.Buildings.Add(new Production("Mine", this.RequiredResourcesForBuilding("medium"), this.Resources, this.Resources.ElementAt(2)));
+
             this.Buildings.Add(new Barracks(this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
             this.Buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("medium"), this.Resources));
             this.Buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), this.Resources));
