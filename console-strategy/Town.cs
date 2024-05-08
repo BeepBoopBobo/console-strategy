@@ -105,12 +105,6 @@ namespace console_strategy
             building.Repair();
             this.DisplayBuildingList("repair");
         }
-        //TODO: check if there are enough resources for the given building,
-        //  also if the building's level is below "maximum level"
-        public bool CanBuildBuilding(Building building)
-        {
-            return building.CanUpgradeBuilding();
-        }
 
         public void GoToOverviewMenu()
         {
@@ -150,7 +144,7 @@ namespace console_strategy
 
         public string GetBuildingDesc(Building building)
         {
-            string hasEnoughResources = this.CanBuildBuilding(building) ? "" : "- Not enough resources";
+            string hasEnoughResources = building.CanUpgradeBuilding() ? "" : "- Not enough resources";
 
             string buildingInfo = $"{building.Name}, lvl: {building.Level}, ";
             string reqResourcesInfo = $"[{this.GetResourceInfo(building)}] {hasEnoughResources}";
@@ -259,7 +253,7 @@ namespace console_strategy
         {
             foreach (var building in this.Buildings)
             {
-                if (building.Level==0)
+                if (building.Level == 0)
                 {
                     return true;
                 }
@@ -307,16 +301,11 @@ namespace console_strategy
         }
         public void GenerateBaseBuildings()
         {
-
-
-            this.Buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), this.Resources,level:1));
-            this.Buildings.Add(new Blacksmith(this.RequiredResourcesForBuilding("small"), this.Resources, level:1));
+            this.Buildings.Add(new Building("Town Hall", this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
+            this.Buildings.Add(new Blacksmith(this.RequiredResourcesForBuilding("small"), this.Resources, level: 1));
             this.Buildings.Add(new Barracks(this.RequiredResourcesForBuilding("medium"), this.Resources, level: 1));
             this.Buildings.Add(new Building("Market", this.RequiredResourcesForBuilding("medium"), this.Resources));
             this.Buildings.Add(new Building("Walls", this.RequiredResourcesForBuilding("big"), this.Resources));
-
         }
-
-
     }
 }
